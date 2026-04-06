@@ -1,0 +1,96 @@
+Finance Tracking System
+import sqlite3
+from datetime import datetime
+#sqlite3 for database management
+# datetime for date and time
+
+# now creating a database table---
+conn = sqlite3.connect(":memory:")  # creating a database
+cursor = conn.cursor() # for execution of commands
+
+
+# creating a table named  it as transactions
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS transactions (
+    id INTEGER PRIMARY KEY, --for different column id
+    type TEXT,
+    category TEXT,
+    amount REAL,
+    date TEXT
+)
+""") # table headings
+conn.commit() # to save table content
+
+#  created add_transaction for user to add details 
+def add_transaction(t_type, category, amount):
+    date = datetime.now().strftime("%Y-%m-%d") # to add date 
+    cursor.execute(
+        "INSERT INTO transactions (type, category, amount, date) Values (?, ?, ?, ?)",
+        (t_type, category, amount, date)
+    )
+    conn.commit() # for saving
+    print(" Your Transaction has been added ")
+
+def view_transactions(): # to display all the previous  transactions
+    cursor.execute("SELECT * FROM transactions") # to view transactions that has been added
+    rows = cursor.fetchall()
+    if not rows: # if no transaction is added this message is to display to user
+        print("No transactions found.")
+        return
+    print("\n All Transactions:")
+    for row in rows: # rows are stored in tuple form
+        print(f"Id: {row[0]}, Type: {row[1]}, Category: {row[2]}, Amount: ₹{row[3]}, Date: {row[4]}")
+
+def show_summary(): # to show all the income and expense data
+    cursor.execute("SELECT type, SUM(amount) FROM transactions GROUP BY type")
+    data = cursor.fetchall() # takes data and return in list of tuple
+    print("\n Summary:")
+    for row in data:
+        print(f"{row[0]}: ₹{row[1]}")
+
+def clear_screen(): # to clear screen
+    pass  # used it if want to add anything new
+
+# Output Screen : this will be visible to user. He/She will choice option from here
+def menu():
+    while True: # it will show menu again and again
+        print("\n Financial Records Management Menu ")
+        print(" Welcome Sir / Madam ")
+        print(" Please choose from Menu")
+        print("1. Add Income")
+        print("2. Add Expense")
+        print("3. View Transactions")
+        print("4. Summary")
+        print("5. Exit")
+
+        Option = input("Choose an option: ") # user will add his choice
+
+        if Option == "1":
+            amt = float(input("Amount: ")) # if value is in decimal
+            cat = input("Category: ")
+            add_transaction("Income", cat, amt)
+
+        elif Option == "2":
+            amt = float(input("Amount: "))
+            cat = input("Category: ")
+            add_transaction("Expense", cat, amt)
+
+        elif Option == "3":
+            view_transactions()
+
+        elif Option == "4":
+            show_summary()
+
+        elif Option == "5":
+            print("Exiting Thank You!! Do visit Again ")
+            break # if user added 5 it will not show menu again 
+
+        else:
+            print(" Invalid choice! Try again.")
+
+        input("\nPress Enter to continue...")
+        clear_screen()
+
+
+menu() # to call function
+conn.close() # closes connection to database
